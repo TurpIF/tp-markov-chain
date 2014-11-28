@@ -1,0 +1,307 @@
+\documentclass[10pt, a4paper]{article}
+
+% On écrit en français
+\usepackage[utf8]{inputenc}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+
+% Packages nécessaires
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{eurosym}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{minted}
+
+% Diagrammes de séquences
+\usepackage{tikz}
+\usetikzlibrary{arrows, shadows}
+\usepgflibrary{arrows}
+\usepackage[underline=true, rounded corners=false]{pgf-umlsd}
+
+% Document "fancy"
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+
+% Gros en-têtes/pied de pages
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{1pt}
+
+% Police Helvetica <3
+\usepackage{helvet}
+\renewcommand*{\familydefault}{\sfdefault}
+
+% Enlever les alinéas
+\setlength{\parindent}{0pt}
+
+% Sous titre de document
+\usepackage{titling}
+\newcommand{\subtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip0.5em}%
+}
+
+% Nom du projet
+\def \DocumentTitle {TP Algorithme expérimentale}
+
+% Contenu des en-têtes/pied de pages
+\fancyhead[RE,LO]{\DocumentTitle}
+\fancyfoot[CE,CO]{\leftmark}
+\fancyfoot[LE,RO]{\thepage}
+
+\begin{document}
+
+% En tête complet de document
+\title{\DocumentTitle}
+\author{
+    TURPIN Pierre
+}
+\date{\today}
+\maketitle \newpage
+\tableofcontents \newpage
+
+\section{Mesure du temps d'exécution du programme}
+
+\subsection{Découverte de l'aspect stochastique du programme}
+
+La compilation de la source est faite en mode débug avec l'option -g de gcc. \\
+
+\begin{minted}{bash}
+gcc -g -o ./markov ./markov.c
+\end{minted}
+
+Les options d'exécutions du programme seront k = 3 et m = 1 000 000 en
+utilisant le fichier texte \emph{don-quixote.txt}. \\
+
+L'éxécution avec ces paramètres est lancées 3 fois. \\
+Les temps d'exécution de celle-ci sont mesurés par la command \emph{time} et
+sont enregistrés dans le même fichier. \\
+Les résultats d'exécution sont également stockés dans des fichiers différents. \\
+
+
+\begin{minted}{bash}
+rm -f ./t
+
+/usr/bin/time -a -o ./t -f "%e" ./markov 3 1000000 < ./don-quixote.txt > ./tmp1
+/usr/bin/time -a -o ./t -f "%e" ./markov 3 1000000 < ./don-quixote.txt > ./tmp2
+/usr/bin/time -a -o ./t -f "%e" ./markov 3 1000000 < ./don-quixote.txt > ./tmp3
+\end{minted}
+
+Dans le fichier de temps d'exécution, on remarque que les trois lignes
+diffèrent. Cela signifie que la durée de chaque exécution est différentes. \\
+
+Les fichiers de résultats contiennent chacun des textes complètement différent. \\
+
+Ces différences doivent être du à une instruction stochastique dans le programme. \\
+
+\subsection{Mesure du temps d'exécution avec k=3, m=1000000}
+
+Le programme est lancé 100 fois avec les même paramètres avec les fichiers
+d'entrées \emph{don-quixote.txt}, \emph{madame-bovary.txt} et \emph{zadig.txt}.
+Les résultats sont ignorés dans cette étude. Seul les temps d'exécutions sont
+enregistrés dans un fichier par texte. \\
+
+\begin{minted}{bash}
+# Nettoyage des fichiers de temps d'execution
+rm -f ./tD
+rm -f ./tM
+rm -f ./tZ
+
+for i in $(seq 1 100); do
+  /usr/bin/time -a -o ./tD -f "%e" ./markov 3 1000000 < ./don-quixote.txt > /dev/null
+done
+
+for i in $(seq 1 100); do
+  /usr/bin/time -a -o ./tM -f "%e" ./markov 3 1000000 < ./madame-bovary.txt > /dev/null
+done
+
+for i in $(seq 1 100); do
+  /usr/bin/time -a -o ./tZ -f "%e" ./markov 3 1000000 < ./zadig.txt > /dev/null
+done
+\end{minted}
+
+Les temps d'exécution sont visible sur l'histogramme
+\ref{fig:chart_k3_m1000000}. Le texte de Don Quixote prend beaucoup plus de
+temps que les autres. \\
+On voit pour chaque texte que le temps de l'exécution est différentes à chaque
+lancement. Cela montre l'aspect stochastique du programme. \\
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{chart_k3_m1000000}
+    \caption{Temps d'exécution du programme avec k=3 et m=1000000}
+    \label{fig:chart_k3_m1000000}
+\end{figure}
+
+\subsection{Suppression de l'aspect stochastique}
+
+Le programme utilise la fonction \emph{rand} de la bibliothèque C. Cette
+fonction est une interface au générateur de nombre pseudo aléatoire de la
+bibliothèque. Ce générateur s'initialise par une \emph{seed} avec la fonction
+d'API \emph{srand}. \\
+
+Pour supprimer l'aspect aléatoire du programme, l'appel à \emph{srand} dans le
+code est commenté. \\
+
+Plusieurs exécutions avec les même paramètres rendent exactement le même
+résultat et ont un temps d'exécution très semblable (< à 2ms de différences). \\
+
+\subsection{Influence de la charge CPU}
+
+Pour vérifier si la charge du CPU influe sur le temps d'exécution, 20
+exécutions pour chaque texte sont lancées en parallèles. On s'attend alors à
+voir que ceux utilisant le texte de Zadig sont ralenties par les autres
+exécutions. \\
+
+\begin{minted}{bash}
+# Nettoyage des fichiers de temps d'execution
+rm -f ./tDC
+rm -f ./tMC
+rm -f ./tZC
+
+for i in $(seq 1 20); do
+  /usr/bin/time -a -o ./tDC -f "%e" ./markov 3 1000000 < ./don-quixote.txt > /dev/null &
+done
+for i in $(seq 1 20); do
+  /usr/bin/time -a -o ./tMC -f "%e" ./markov 3 1000000 < ./madame-bovary.txt > /dev/null &
+done
+for i in $(seq 1 20); do
+  /usr/bin/time -a -o ./tZC -f "%e" ./markov 3 1000000 < ./zadig.txt > /dev/null &
+done
+\end{minted}
+
+Les temps d'exécution sont visible sur l'histogramme
+\ref{fig:chart_k3_m1000000_para}. Les temps d'exécution sont clairement
+ralenties par rapport à la première étude. Cela est du à la prise de CPU par
+chacune des instances du programme. \\
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{chart_k3_m1000000_para}
+    \caption{Temps d'exécution du programme avec k=3 et m=1000000 avec toute les exécutions en parallèles}
+    \label{fig:chart_k3_m1000000_para}
+\end{figure}
+
+\subsection{Optimisation par le compilateur}
+
+Le programme est recompilé en mode release optimisé en utilisant l'option
+\emph{-O3} de \emph{gcc} :
+
+\begin{minted}{bash}
+gcc -O3 -o ./markov ./markov.c
+\end{minted}
+
+L'étude du temps d'exécution est à nouveau effectué seulement sur le fichier de
+Don Quixote. Les 100 exécutions ne seront pas lancées en parallèles. \\
+
+\begin{minted}{bash}
+# Nettoyage des fichiers de temps d'execution
+rm -f ./tO3
+
+for i in $(seq 1 100); do
+  /usr/bin/time -a -o ./tO3 -f "%e" ./markov 3 1000000 < ./don-quixote.txt > /dev/null
+done
+\end{minted}
+
+Les temps sont comparés à ceux des exécutions sans le paramètre d'optimisation.
+Le graphique \ref{fig:chart_k3_m1000000_o3} montre bien que l'optimisation
+accélère l'exécution du programme. \\
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{chart_k3_m1000000_o3}
+    \caption{Comparaison des temps d'exécution du programme avec k=3 et m=1000000 avec optimisation et sans}
+    \label{fig:chart_k3_m1000000_o3}
+\end{figure}
+
+On obtient un temps médian de $0.34s$ avec l'optimisation et $0.54s$ sans. Le
+pourcentage d'amélioration est donc de l'ordre de $37\%$
+
+\section{Trouver l'opération dominante}
+
+Pour trouver l'opération dominante, le programme est recompilé en mode débug
+avec l'option \emph{-pg}. \\
+
+L'exécutable est lancé une fois avec des paramètres fixes puis l'exécution peut
+être analysé grâce au fichier \emph{gmon.out} avec le programme \emph{gprof}. \\
+
+\begin{minted}{bash}
+gcc -pg -o markov ./markov.c
+./markov 3 1000000 < ./don-quixote.txt > /dev/null
+gprof ./markov ./gmon.out
+\end{minted}
+
+Le résultat de \emph{gprof} est visible ci-dessous : \\
+
+\begin{minted}{bash}
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ns/call  ns/call  name    
+ 65.97      0.32     0.32 10653342    29.72    29.72  wordncmp
+ 18.85      0.41     0.09                             main
+  4.19      0.43     0.02   472367    42.56    42.56  skip
+  3.14      0.44     0.02                             sortcmp
+  0.00      0.44     0.00   157455     0.00     0.00  writeword
+\end{minted}
+
+La fonction la plus appelée dans le programme et qui prend le plus de temps
+d'exécution est incontestablement \emph{wordncmp}. \\
+Elle prend $65.97\%$ du temps d'exécution du programme. \\
+
+L'exécution a été faite plusieurs fois pour pouvoir vérifier qu'on obtient le
+même résultat malgré l'aspect stochastique du programme. \\
+
+\section{Compter le nombre d'appels de l'opération dominante}
+
+La fonction \emph{wordncmp} est utilisé dans trois buts : \\
+\begin{itemize}
+  \item initialisation du tableau word
+  \item recherche dichotomique des préfixes candidats dans le tableau
+  \item choix aléatoire d'un préfixe parmi les préfixes candidats
+\end{itemize}
+~\\
+
+Chacune des utilisations est profilé en plaçant dans le code trois compteurs.
+Ces trois compteurs sont ensuites affichés séparés par des espaces sur une
+ligne de \emph{stderr}. \\
+
+On remarque que l'exécution rend des résultats différents. Le programme est
+lancé 100 fois avec comme paramètres ($k=3$, $m=1000000$,
+text=./don-quixote.txt) pour pouvoir récupérer les valeurs médiannes. \\
+
+\begin{minted}{bash}
+# Nettoyage des fichiers de comptage
+rm -f ./count
+
+for i in $(seq 1 100); do
+  ./markov 3 1000000 < ./don-quixote.txt > /dev/null 2>> ./count
+done
+\end{minted}
+
+Les résultats donnent : \\
+\begin{description}
+  \item[7024519 appels médians] pour l'initialisation du tableau word
+  \item[5243404 appels médians] pour la recherche dichotomique des préfixes
+    candidats dans le tableau
+  \item[936562 appels médians] pour le choix aléatoire d'un préfixe parmi les
+    préfixes candidats
+\end{description}
+~\\
+
+On remarque que l'initialisation du tableau word n'est pas atteint par l'aspect
+stochastique. Le nombre d'appel à \emph{wordncmp} dans cette partie est donc
+constant. \\
+
+Au total, il y a $13204485$ appels médians pour la fonction \emph{wordncmp}. \\
+
+\section{Mesurer la complexité de l'algorithme en fonction de n, m et k}
+
+Pour plus de rapidité de test, le programme est compilé avec l'option
+d'optimisation \emph{-O3} du compilateur. \\
+
+\end{document}
