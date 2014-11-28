@@ -17,7 +17,7 @@ mMax=1000000
 mStep=100000
 
 # Nombre d'exec par configuration
-N=10
+N=100
 
 # Liste des textes
 texts="don-quixote.txt" # madame-bovary.txt zadig.txt"
