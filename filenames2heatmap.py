@@ -68,7 +68,14 @@ if __name__ == '__main__':
             # if k == 2:
             #     continue
 
-            ls = list(map(float, open(match.group(0)).readlines()))
+            try:
+                ls = list(map(float, open(match.group(0)).readlines()))
+            except ValueError:
+                print('File %s is malformated' % match.group(0), file=sys.stderr)
+                continue
+            if not ls:
+                continue
+
             avg = sum(ls) / len(ls)
 
             data[type_].setdefault(name, {})
