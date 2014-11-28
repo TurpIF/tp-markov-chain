@@ -301,7 +301,74 @@ Au total, il y a $13204485$ appels médians pour la fonction \emph{wordncmp}. \\
 
 \section{Mesurer la complexité de l'algorithme en fonction de n, m et k}
 
+\subsection{Protocole expérimental}
+
 Pour plus de rapidité de test, le programme est compilé avec l'option
 d'optimisation \emph{-O3} du compilateur. \\
+
+Dans cette étude, la variable \emph{count3} ainsi que le temps d'exécution sont
+enregistrés. Pour voir l'évolution des résultats en fonction des variations des
+trois variables $k, m, n$, plusieurs sous-études ont été menées. \\
+
+Une sous-étude correspond à une configuration particulière. \\
+Les trois textes sont utilisés donc $n\in\{404461, 112972, 26046\}$ pour,
+respectivement, Don Quixote, Madame de Bovary et Zadig. \\
+La variable $k$ est défini entre $2$ et $20$ inclus \footnote{Les temps
+d'exécutions étaient trop grand pour k=1}\footnote{Sur certains graphiques, k=2
+n'est pas montré car le temps d'exécution ou \emph{count3} étaient trop grand
+ce qui rendait illisible les variations sur le reste du graphique.}. \\
+La variable $m$ est testé entre $100000$ et $1000000$ avec un pas de $100000$. \\
+Enfin comme chaque exécution est aléatoire, une sous-étude correspond à lancer
+$100$ fois le programme avec la même configuration d'entrée. \\
+Les valeurs résultantes de temps d'exécution et de \emph{count3} sont alors les
+moyennes des $100$ exécutions. \\
+
+Ce protocole d'exécution est effectué par ce script suivant : \\
+\begin{minted}{bash}
+#!/usr/bin/env sh
+
+dir="./results"
+rm -rf $dir
+mkdir $dir
+
+gcc -O3 -o ./markov ./markov.c
+
+# Configuration de k
+kMin=2
+kMax=20
+kStep=1
+
+# Configuration de m
+mMin=100000
+mMax=1000000
+mStep=100000
+
+# Nombre d'exec par configuration
+N=100
+
+# Liste des textes
+texts="don-quixote.txt madame-bovary.txt zadig.txt"
+
+for txt in $texts; do
+  n=$(cat $txt | wc -w)
+  for k in $(seq $kMin $kStep $kMax); do
+    for m in $(seq $mMin $mStep $mMax); do
+      echo "$N executions avec k=$k, m=$m, n=$n, txt=$txt"
+      for i in $(seq 1 $N); do
+        /usr/bin/time -a -o "$dir/time-$txt-$k-$m-$n" -f "%e" \
+          ./markov $k $m < $txt > /dev/null 2>> "$dir/count-$txt-$k-$m-$n"
+      done
+    done
+  done
+done
+\end{minted}
+
+Les résultats sont des simples fichiers contenants $100$ lignes chacun. Chaque
+fichier est ensuite lu pour être moyenné puis structuré pour ensuite être
+transformé en configuration de dataviz Highcharts.com (heatmap ou courbes)
+\footnote{Les sources de ces transformations sont disponibles sur
+\url{https://github.com/TurpIF/tp-markov-chain}}. \\
+
+\subsection{Résultats et analyses}
 
 \end{document}

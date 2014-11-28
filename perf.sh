@@ -20,13 +20,13 @@ mStep=100000
 N=100
 
 # Liste des textes
-texts="don-quixote.txt" # madame-bovary.txt zadig.txt"
+texts="don-quixote.txt madame-bovary.txt zadig.txt"
 
 for txt in $texts; do
   n=$(cat $txt | wc -w)
   for k in $(seq $kMin $kStep $kMax); do
     for m in $(seq $mMin $mStep $mMax); do
-      echo "$N exécutions avec k=$k, m=$m, n=$n, txt=$txt"
+      echo "$N executions avec k=$k, m=$m, n=$n, txt=$txt"
       for i in $(seq 1 $N); do
         /usr/bin/time -a -o "$dir/time-$txt-$k-$m-$n" -f "%e" \
           ./markov $k $m < $txt > /dev/null 2>> "$dir/count-$txt-$k-$m-$n"
