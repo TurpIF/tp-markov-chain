@@ -371,4 +371,94 @@ transformé en configuration de dataviz Highcharts.com (heatmap ou courbes)
 
 \subsection{Résultats et analyses}
 
+Des heatmaps ont été générés avec $k$ variant sur les abscisses, $m$ sur les
+ordonnées et la hauteur est soit le temps d'exécution, soit la valeur que prend
+\emph{count3}.
+
+\subsubsection{Temps d'exécution}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{time-don-quixote-plot}
+    \caption{Temps d'exécution du programme en fonction de $k$ avec quelques $m$ donnés avec le texte de Don Quixote}
+    \label{fig:time-don-quixote-plot}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{time-don-quixote-plot-m}
+    \caption{Temps d'exécution du programme en fonction de $m$ avec quelques $k$ donnés avec le texte de Don Quixote}
+    \label{fig:time-don-quixote-plot-m}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{time-don-quixote}
+    \caption{Temps d'exécution du programme avec le texte de Don Quixote}
+    \label{fig:time-don-quixote}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{time-madame}
+    \caption{Temps d'exécution du programme avec le texte de Madame de Bovary}
+    \label{fig:time-madame}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{time-zadig}
+    \caption{Temps d'exécution du programme avec le texte de Zadig}
+    \label{fig:time-zadig}
+\end{figure}
+
+On remarque, surtout avec Don Quixote \ref{fig:time-don-quixote}
+\ref{fig:time-don-quixote-plot}, que $k=2$ estun cas où le temps d'exécution
+est très élevé. De plus, la génération de donnée a été arrêté pour le cas $k=1$
+car il prennait beaucoup trop de temps. A part ces cas particuliers, le temps
+d'exécution est à peu près croissante linéairement en fonction de $k$. \\
+
+On remarque également, avec les texte de Madame de Bovary \ref{fig:time-madame}
+et de Zadig \ref{fig:time-zadig}, que les temps deviennent constants quand $m$
+varie après un certain $k$ ($k=11$ pour Zadig et $k=15$ pour Madame de Bovary). \\
+
+Si le temps d'exécution n'est pas constant par rapport à $m$, on remarque
+qu'avec le cas de Don Quixote \ref{fig:time-don-quixote-plot-m} qu'il croit en
+logarithme en fonction de $m$. \\
+
+\subsubsection{Nombre d'appel \emph{count3}}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{count-don-quixote}
+    \caption{\emph{count3} avec le texte de Don Quixote}
+    \label{fig:count-don-quixote}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{count-madame}
+    \caption{\emph{count3} avec le texte de Madame de Bovary}
+    \label{fig:count-madame}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{count-zadig}
+    \caption{\emph{count3} avec le texte de Zadig}
+    \label{fig:count-zadig}
+\end{figure}
+
+On remarque avec Madame de Bovary \ref{fig:count-madame} et Zadig
+\ref{fig:count-zadig} que \emph{count3} devient constant à partir d'un certain
+$k$. Cette valeur de $k$ est la même qui rend le temps d'exécution constant par
+rapport à $m$ ($k=11$ pour Zadig et $k=15$ pour Madame de Bovary).
+
+On voit avec Don Quixote \ref{fig:count-don-quixote} que $k$ n'a pas une très
+grande influence sur la valeur de \emph{count3}. En effet celle-ci croît
+linéairement en fonction de $m$. En fonction de $k$, sa valeur chute très
+rapidement au début \footnote{k=2 et k=3 ont était retiré de la dataviz car ils
+avaient une valeur trop importante et rendaient le reste du graphique
+illisible} puis croit légèrement pour se stabiliser à une valeur fixe. \\
+
 \end{document}
