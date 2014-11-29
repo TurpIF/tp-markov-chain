@@ -1,52 +1,41 @@
 #!/usr/bin/env python3
 
-heatmap_skeleton = '''$(function () {
+plots_skeleton = '''$(function () {
     $('#container').highcharts({
-        chart: {
-            type: 'heatmap',
-            marginTop: 40,
-            marginBottom: 40
-        },
         title: {
-            text: null
+            text: null,
+            x: -20
         },
         xAxis: {
             categories: [%s],
-            title: 'k'
+            title: {
+                text: 'Paramètre %s'
+            }
         },
         yAxis: {
-            categories: [%s],
-            title: 'm'
+            title: {
+                text: "%s"
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
         },
-        colorAxis: {
-            min: 0,
-            minColor: '#FFFFFF',
-            maxColor: Highcharts.getOptions().colors[1]
+        tooltip: {
+            valueSuffix: ''
         },
         legend: {
-            align: 'right',
             layout: 'vertical',
-            margin: 0,
-            verticalAlign: 'top',
-            y: 25,
-            symbolHeight: 320
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
         },
-        series: [{
-            name: null,
-            borderWidth: 1,
-            data: [%s],
-            dataLabels: {
-                enabled: false,
-                color: 'black',
-                style: {
-                    textShadow: 'none',
-                    HcTextStroke: null
-                }
-            }
-        }]
+        series: [%s]
     });
 });'''
-heatmap_skeleton = ' '.join(s.strip() for s in heatmap_skeleton.split('\n'))
+
+plots_skeleton = ' '.join(s.strip() for s in plots_skeleton.split('\n'))
 
 if __name__ == '__main__':
     import sys
@@ -92,12 +81,21 @@ if __name__ == '__main__':
             kCategories = sorted(kCategories)
             mCategories = sorted(mCategories)
 
-            serie = list()
-            for (k, m, n), avg in table.items():
-                serie.append((kCategories.index(k), mCategories.index(m), avg))
+            kSerie = dict()
+            mSerie = dict()
+            for (k, m, n), avg in list(table.items()):
+                if len(kSerie) < 5 and m >= mCategories[-5]:
+                    kSerie[m] = [avg for (_, m2, _), avg in table.items() if m2 == m]
+                if len(mSerie) < 5 and k >= kCategories[-5]:
+                    mSerie[k] = [avg for (k2, _, _), avg in table.items() if k2 == k]
 
             strKCategories = ', '.join(map(str, kCategories))
             strMCategories = ', '.join(map(str, mCategories))
-            strSerie = ', '.join('[%s, %s, %s]' % e for e in serie)
-            print(type_, name)
-            print(heatmap_skeleton % (strKCategories, strMCategories, strSerie))
+            strKSerie = ', '.join('{name: "m=%sK", data: [%s]}' % (int(m / 1000.0), ', '.join(map(str, ks))) for m, ks in kSerie.items())
+            strMSerie = ', '.join('{name: "k=%s", data: [%s]}' % (k, ', '.join(map(str, ms))) for k, ms in mSerie.items())
+            strType = 'Temps d\'exécution (s)' if type_ == 'time' else 'count3'
+            print(type_, name, 'k')
+            print(plots_skeleton % (strKCategories, 'k', strType, strKSerie))
+            print(type_, name, 'm')
+            print(plots_skeleton % (strMCategories, 'm', strType, strMSerie))
+            print()
